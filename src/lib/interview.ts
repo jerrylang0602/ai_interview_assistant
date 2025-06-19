@@ -24,22 +24,27 @@ FIRST, analyze if this response appears to be AI-generated. Look for these indic
 Question: ${questionText}
 Candidate Answer: ${answer}
 
-Evaluate this answer based on these specific metrics using a 1-100 point scale:
+Evaluate this answer based on these specific metrics using a 1-100 point scale for EACH category:
 
 1. Technical Accuracy (1-25 points): Clarity, completeness, and technical correctness of the response
 2. Problem-Solving Methodology (1-25 points): Structured and logical approaches to troubleshooting and solutions
 3. Professional Communication (1-25 points): Clarity, effectiveness, and appropriateness of communication
 4. Documentation & Process Orientation (1-25 points): Methodical approaches and quality in maintaining technical documentation
 
-IMPORTANT: If the response appears to be AI-generated, automatically assign a score of 0 and flag as "AI_DETECTED".
+IMPORTANT SCORING REQUIREMENTS:
+- Each category score must be between 1-25 (never 0 unless AI is detected)
+- Total score must be between 1-100 (never 0 unless AI is detected)
+- If the response appears to be AI-generated, automatically assign ALL scores to 0 and flag as "AI_DETECTED"
+- Ensure realistic scoring - don't assign perfect scores unless truly exceptional
+- Be consistent with the numerical ranges provided
 
 Provide your response in this exact JSON format:
 {
-  "score": [total score out of 100],
-  "technicalAccuracy": [score out of 25],
-  "problemSolving": [score out of 25], 
-  "communication": [score out of 25],
-  "documentation": [score out of 25],
+  "score": [total score out of 100, range 1-100],
+  "technicalAccuracy": [score out of 25, range 1-25],
+  "problemSolving": [score out of 25, range 1-25], 
+  "communication": [score out of 25, range 1-25],
+  "documentation": [score out of 25, range 1-25],
   "aiDetected": [true/false],
   "feedback": "[brief constructive feedback explaining the score and any AI detection]"
 }
@@ -67,7 +72,7 @@ Score Guidelines:
     const cleanResponse = response.replace(/```json\n?|\n?```/g, '').trim();
     const evaluation = JSON.parse(cleanResponse);
     
-    // If AI is detected, override scores
+    // If AI is detected, override scores to 0
     if (evaluation.aiDetected) {
       evaluation.score = 0;
       evaluation.technicalAccuracy = 0;
@@ -75,6 +80,19 @@ Score Guidelines:
       evaluation.communication = 0;
       evaluation.documentation = 0;
       evaluation.feedback = "AI-generated response detected. This violates assessment integrity guidelines.";
+    } else {
+      // Ensure scores are within proper ranges (1-100 for total, 1-25 for categories)
+      evaluation.score = Math.max(1, Math.min(100, evaluation.score));
+      evaluation.technicalAccuracy = Math.max(1, Math.min(25, evaluation.technicalAccuracy));
+      evaluation.problemSolving = Math.max(1, Math.min(25, evaluation.problemSolving));
+      evaluation.communication = Math.max(1, Math.min(25, evaluation.communication));
+      evaluation.documentation = Math.max(1, Math.min(25, evaluation.documentation));
+      
+      // Ensure total score matches sum of categories (allow some variance)
+      const categorySum = evaluation.technicalAccuracy + evaluation.problemSolving + evaluation.communication + evaluation.documentation;
+      if (Math.abs(evaluation.score - categorySum) > 5) {
+        evaluation.score = categorySum;
+      }
     }
     
     // Determine level based on score
@@ -89,7 +107,7 @@ Score Guidelines:
     
     return {
       questionId,
-      question: questionText, // Now using the actual question text
+      question: questionText,
       answer,
       score: evaluation.score,
       level,
@@ -102,7 +120,7 @@ Score Guidelines:
     };
   } catch (error) {
     console.error('Error evaluating answer:', error);
-    // Fallback evaluation with proper scoring range
+    // Fallback evaluation with proper scoring range (never 0 unless error)
     return {
       questionId,
       question: questionText,
