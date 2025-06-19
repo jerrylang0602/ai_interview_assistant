@@ -1,14 +1,8 @@
 import OpenAI from 'openai';
 import { Message } from '../types/chat';
 
-const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-
-if (!apiKey) {
-  throw new Error('VITE_OPENAI_API_KEY environment variable is not set. Please add it to your .env file.');
-}
-
 const openai = new OpenAI({
-  apiKey,
+  apiKey: import.meta.env.VITE_OPENAI_API_KEY,
   dangerouslyAllowBrowser: true
 });
 
