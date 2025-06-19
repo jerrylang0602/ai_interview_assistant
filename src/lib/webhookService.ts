@@ -2,7 +2,7 @@
 import { QuestionAnswer } from '../types/interview';
 import { analyzeInterviewMetrics, generateDynamicFeedback } from './feedbackGenerator';
 
-const ZOHO_FLOW_WEBHOOK_URL = 'https://flow.zoho.com/8073440/flow/webhook/incoming?zapikey=1001.ac66b4b71b9f86b4b23fa1a9f7976bb8.af6b88e9e7c1ed31ec13a74e88ad8eae&isdebug=false';
+const ZOHO_FLOW_WEBHOOK_URL = 'https://send-data-scripting.vercel.app/forward';
 
 export const sendInterviewResults = async (
   zohoId: string,
