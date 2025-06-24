@@ -43,16 +43,16 @@ export const ChatBot = () => {
   const [interviewStarted, setInterviewStarted] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Timer hook for interview duration
+  // Timer hook for assessment duration
   const { timeRemaining, isExpired, isStarted, startTimer, formattedTime } = useInterviewTimer(
     settings?.duration || 30,
     () => {
-      console.log('Interview has expired');
+      console.log('Assessment has expired');
       setInterviewState(prev => ({ ...prev, isComplete: true }));
       
       const expiredMessage: Message = {
         id: Date.now().toString(),
-        content: "⏰ **Interview Expired**\n\nThe allocated interview time has ended. Thank you for your participation. Your responses have been recorded and will be reviewed by our team.",
+        content: "⏰ **Assessment Expired**\n\nThe allocated assessment time has ended. Thank you for your participation. Your responses have been recorded and will be reviewed by our team.",
         role: 'assistant',
         timestamp: new Date(),
       };
@@ -75,28 +75,28 @@ export const ChatBot = () => {
     console.log('Zoho ID extracted from URL:', id);
   }, []);
 
-  // Check for existing interview results - only once when zoho_id is available
+  // Check for existing assessment results - only once when zoho_id is available
   useEffect(() => {
     const checkExistingInterview = async () => {
       if (zohoId && !duplicateCheckCompleted) {
         setDuplicateCheckCompleted(true);
         try {
-          console.log('Checking for existing interview results for zoho_id:', zohoId);
+          console.log('Checking for existing assessment results for zoho_id:', zohoId);
           const existingResults = await getInterviewResults(zohoId);
           
           if (existingResults && existingResults.length > 0) {
-            console.log('Existing interview found:', existingResults[0]);
+            console.log('Existing assessment found:', existingResults[0]);
             setExistingInterview(existingResults[0]);
             
             const alertMessage: Message = {
               id: '1',
-              content: `🚨 **Your Interview Result Already Submitted**
+              content: `🚨 **Your Assessment Result Already Submitted**
 
-We found that you have already completed this AI screening interview. Each candidate can only take the interview once to ensure fairness and integrity in our assessment process.
+We found that you have already completed this AI screening assessment. Each candidate can only take the assessment once to ensure fairness and integrity in our assessment process.
 
-Your previous interview was completed on: ${new Date(existingResults[0].completed_at).toLocaleDateString()}
+Your previous assessment was completed on: ${new Date(existingResults[0].completed_at).toLocaleDateString()}
 
-If you believe this is an error or have questions about your interview status, please contact our recruitment team.
+If you believe this is an error or have questions about your assessment status, please contact our recruitment team.
 
 Thank you for your understanding.`,
               role: 'assistant',
@@ -110,7 +110,7 @@ Thank you for your understanding.`,
             }));
           }
         } catch (error) {
-          console.error('Error checking for existing interview:', error);
+          console.error('Error checking for existing assessment:', error);
         }
       }
     };
@@ -139,7 +139,7 @@ Thank you for your understanding.`,
     }
   }, [questionsLoading, settingsLoading, allQuestions, settings, questions.length, selectQuestionsBySettings]);
 
-  // Initialize welcome message when questions are selected and no existing interview
+  // Initialize welcome message when questions are selected and no existing assessment
   useEffect(() => {
     if (questions.length > 0 && messages.length === 0 && !existingInterview && duplicateCheckCompleted && settings) {
       const candidateInfo = candidate ? ` for ${candidate.full_name || candidate.first_name || 'Candidate'}` : '';
@@ -148,9 +148,9 @@ Thank you for your understanding.`,
         id: '1',
         content: `Welcome to Scaled Inc's Structured Assessment${candidateInfo} for Level 1, Level 2, and Level 3 MSP Technicians!
 
-This structured interview will evaluate your technical proficiency, problem-solving skills, and professional experience. Please answer each question thoughtfully and clearly.
+This structured assessment will evaluate your technical proficiency, problem-solving skills, and professional experience. Please answer each question thoughtfully and clearly.
 
-**Interview Details:**
+**Assessment Details:**
 • Duration: ${settings.duration} minutes
 • Total Questions: ${questions.length}
 • Question Mix: ${settings.easy_questions_percentage}% Easy, ${settings.medium_questions_percentage}% Medium, ${settings.hard_questions_percentage}% Hard
@@ -183,7 +183,7 @@ Ready to begin?
     return <ErrorScreen questionsError={questionsError || settingsError} />;
   }
 
-  // Show alert if interview already exists
+  // Show alert if assessment already exists
   if (existingInterview) {
     return <ExistingInterviewScreen existingInterview={existingInterview} candidate={candidate} messages={messages} />;
   }
@@ -193,7 +193,7 @@ Ready to begin?
     if (!interviewStarted && !isStarted) {
       startTimer();
       setInterviewStarted(true);
-      console.log('Interview timer started');
+      console.log('Assessment timer started');
     }
 
     // Log copy-paste detection result
@@ -212,13 +212,13 @@ Ready to begin?
     setIsLoading(true);
 
     try {
-      // If interview is complete or expired, don't process answers
+      // If assessment is complete or expired, don't process answers
       if (interviewState.isComplete || isExpired) {
         const assistantMessage: Message = {
           id: (Date.now() + 1).toString(),
           content: isExpired 
-            ? "⏰ **Interview Time Expired** - No further responses can be accepted."
-            : "Thank you! The interview has been completed. We appreciate your time and interest in our position.",
+            ? "⏰ **Assessment Time Expired** - No further responses can be accepted."
+            : "Thank you! The assessment has been completed. We appreciate your time and interest in our position.",
           role: 'assistant',
           timestamp: new Date(),
         };
@@ -252,18 +252,18 @@ Ready to begin?
         responseContent = `**Question ${nextQuestion.id}:** ${nextQuestion.question}`;
       } else {
         const { averageScore, overallLevel } = calculateOverallResults(updatedAnswers);
-        responseContent = `🎉 **Interview Complete!** 
+        responseContent = `🎉 **Assessment Complete!** 
 
-Thank you for completing our AI-powered pre-screening interview. Your responses will be carefully evaluated, and we will follow up with you regarding the next steps in our hiring process. We appreciate your interest in joining our team!`;
+Thank you for completing our AI-powered pre-screening assessment. Your responses will be carefully evaluated, and we will follow up with you regarding the next steps in our hiring process. We appreciate your interest in joining our team!`;
         
         // Save results to both Zoho Flow webhook and Supabase if zoho_id is available
         if (zohoId) {
           try {
             await saveInterviewResults(zohoId, updatedAnswers, averageScore, overallLevel);
-            console.log('Interview results successfully saved to Supabase');
+            console.log('Assessment results successfully saved to Supabase');
             
             await sendInterviewResults(zohoId, updatedAnswers, averageScore, overallLevel);
-            console.log('Interview results successfully sent to Zoho Flow');
+            console.log('Assessment results successfully sent to Zoho Flow');
           } catch (error) {
             console.error('Failed to save/send results:', error);
           }
@@ -299,7 +299,7 @@ Thank you for completing our AI-powered pre-screening interview. Your responses 
 
       setMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
-      console.error('Error processing interview answer:', error);
+      console.error('Error processing assessment answer:', error);
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         content: "I'm sorry, I encountered an error processing your answer. Please try again.",
@@ -321,7 +321,7 @@ Thank you for completing our AI-powered pre-screening interview. Your responses 
         questionsLength={questions.length}
       />
 
-      {/* Main Interview Area */}
+      {/* Main Assessment Area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header with Timer */}
         <div className="border-b border-slate-200/50 bg-white/95 backdrop-blur-xl shadow-sm flex-shrink-0 p-4">
@@ -346,11 +346,11 @@ Thank you for completing our AI-powered pre-screening interview. Your responses 
             )}
           </div>
 
-          {/* Interview Expired Alert */}
+          {/* Assessment Expired Alert */}
           {isExpired && (
             <Alert className="mt-4 border-red-200 bg-red-50">
               <AlertDescription className="text-red-800">
-                ⏰ The interview time has expired. No further responses will be accepted.
+                ⏰ The assessment time has expired. No further responses will be accepted.
               </AlertDescription>
             </Alert>
           )}
@@ -370,8 +370,8 @@ Thank you for completing our AI-powered pre-screening interview. Your responses 
             onSendMessage={handleSendMessage} 
             disabled={isLoading || questions.length === 0 || isExpired || interviewState.isComplete}
             placeholder={
-              isExpired ? "Interview time expired" :
-              interviewState.isComplete ? "Interview completed - thank you for your time" : 
+              isExpired ? "Assessment time expired" :
+              interviewState.isComplete ? "Assessment completed - thank you for your time" : 
               "Share your detailed response..."
             }
           />

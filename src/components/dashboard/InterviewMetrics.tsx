@@ -162,7 +162,7 @@ export const InterviewMetrics = ({ analyticsData, recentResults }: InterviewMetr
                     {data.avg_score?.toFixed(1) || '0.0'}%
                   </span>
                   <Badge variant="outline" className="text-xs">
-                    {data.total_interviews || 0} interviews
+                    {data.total_interviews || 0} assessments
                   </Badge>
                 </div>
               </div>

@@ -28,7 +28,7 @@ export const InterviewSidebar: React.FC<InterviewSidebarProps> = ({
             </div>
             <div className="min-w-0 flex-1">
               <h1 className="text-lg font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent truncate">
-                AI Interview
+                AI Assessment
               </h1>
               <p className="text-xs text-slate-500 font-medium">MSP Technician Assessment</p>
               {candidate && (
@@ -165,7 +165,7 @@ export const InterviewSidebar: React.FC<InterviewSidebarProps> = ({
                 <h3 className="font-bold text-slate-800 text-sm">Completed!</h3>
               </div>
               <p className="text-xs text-slate-600">
-                Interview assessment finished successfully.
+                Assessment finished successfully.
               </p>
             </div>
           )}

@@ -7,7 +7,7 @@ export const useInterviewTimer = (durationMinutes: number, onExpire: () => void)
   const [isStarted, setIsStarted] = useState(false);
 
   const startTimer = useCallback(() => {
-    console.log(`Starting interview timer for ${durationMinutes} minutes`);
+    console.log(`Starting assessment timer for ${durationMinutes} minutes`);
     setIsStarted(true);
   }, [durationMinutes]);
 

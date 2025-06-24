@@ -20,7 +20,7 @@ export const ExistingInterviewScreen: React.FC<ExistingInterviewScreenProps> = (
 
   return (
     <div className="flex h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-      {/* Enhanced Sidebar for existing interview alert */}
+      {/* Enhanced Sidebar for existing assessment alert */}
       <div className="w-96 bg-white/95 backdrop-blur-xl border-r border-slate-200/50 shadow-xl hidden md:flex md:flex-col">
         <div className="flex-1 overflow-y-auto">
           <div className="p-6">
@@ -33,7 +33,7 @@ export const ExistingInterviewScreen: React.FC<ExistingInterviewScreenProps> = (
               </div>
               <div className="min-w-0 flex-1">
                 <h1 className="text-lg font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent truncate">
-                  Interview Status
+                  Assessment Status
                 </h1>
                 <p className="text-xs text-slate-500 font-medium">Already Completed</p>
                 {candidate && (
@@ -50,7 +50,7 @@ export const ExistingInterviewScreen: React.FC<ExistingInterviewScreenProps> = (
                 <div className="w-7 h-7 bg-red-500 rounded-lg flex items-center justify-center">
                   <AlertCircle className="w-3.5 h-3.5 text-white" />
                 </div>
-                <h3 className="font-bold text-slate-800 text-sm">Interview Already Submitted</h3>
+                <h3 className="font-bold text-slate-800 text-sm">Assessment Already Submitted</h3>
               </div>
               
               <div className="space-y-2 text-xs text-slate-600">
@@ -96,7 +96,7 @@ export const ExistingInterviewScreen: React.FC<ExistingInterviewScreenProps> = (
         </div>
       </div>
 
-      {/* Main Interview Area */}
+      {/* Main Assessment Area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Enhanced Header */}
         <div className="bg-white/95 backdrop-blur-xl border-b border-slate-200/50 shadow-sm flex-shrink-0">
@@ -107,7 +107,7 @@ export const ExistingInterviewScreen: React.FC<ExistingInterviewScreenProps> = (
                   <AlertCircle className="w-5 h-5 text-white" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h2 className="text-xl font-bold text-slate-800">Interview Already Completed</h2>
+                  <h2 className="text-xl font-bold text-slate-800">Assessment Already Completed</h2>
                   <p className="text-sm text-slate-500 font-medium">
                     <span className="flex items-center gap-2 text-red-600">
                       <div className="w-2 h-2 bg-red-500 rounded-full"></div>
@@ -138,7 +138,7 @@ export const ExistingInterviewScreen: React.FC<ExistingInterviewScreenProps> = (
           <MessageInput 
             onSendMessage={() => {}} 
             disabled={true}
-            placeholder="Interview already completed - no further input required"
+            placeholder="Assessment already completed - no further input required"
           />
         </div>
       </div>
