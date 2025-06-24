@@ -11,187 +11,124 @@ export type Database = {
     Tables: {
       candidates: {
         Row: {
-          active_stage: string[] | null
-          alternate_mobile: string | null
-          associated_tags: string[] | null
-          candidate_id: string | null
-          candidate_owner_id: string | null
-          candidate_owner_name: string | null
+          ai_interview_attempts: number | null
+          ai_interview_created: string | null
+          ai_interview_duration: number | null
+          ai_interview_expire_date: string | null
+          ai_interview_finished: string | null
+          ai_interview_last_reminder: string | null
+          ai_interview_link: string | null
+          ai_interview_max_attempts: number | null
+          ai_interview_notes: string | null
+          ai_interview_reminder_sent: boolean | null
+          ai_interview_score: number | null
+          ai_interview_status: string | null
+          available_ai_interview: boolean | null
           candidate_stage: string | null
-          candidate_status: string | null
-          career_page_invite_status: string | null
           city: string | null
           country: string | null
-          created_at: string
-          created_by_id: string | null
-          created_by_name: string | null
-          created_time: string | null
-          current_employer: string | null
-          current_employment_status: string | null
-          current_job_title: string | null
-          current_salary_zar: number | null
+          created_at: string | null
+          current_employment_status_2: string | null
           desired_salary_zar: number | null
-          email: string | null
-          email_opt_out: boolean | null
+          email: string
           experience_in_years: number | null
           first_name: string | null
-          fresh_candidate: boolean | null
           full_name: string | null
-          how_did_you_hear_about_us: string | null
+          how_did_you_hear_about_scaled: string | null
           id: string
-          introduction_video_link: string | null
-          is_attachment_present: boolean | null
-          is_locked: boolean | null
-          is_unqualified: boolean | null
-          last_activity_time: string | null
-          last_mailed_time: string | null
+          last_ai_interview_date: string | null
           last_name: string | null
-          level_2_strengths: string | null
-          level_3_skills: string | null
-          linkedin_profile: string | null
           mobile: string | null
-          monthly_rate: number | null
-          no_of_applications: number | null
-          notice_period_days: number | null
+          number_of_ai_interviews: number | null
           origin: string | null
-          province: string | null
-          rating: number | null
-          referral: string | null
-          role_interest: string | null
-          sa_id_number: string | null
-          salutation: string | null
-          scaled_level: string | null
-          skill_set: string | null
-          source: string | null
-          state: string | null
-          street: string | null
+          resume_ai_feedback: string | null
+          resume_level: string | null
+          resume_prescreening_status: string | null
+          resume_score: string | null
+          status: string | null
           title_position: string | null
-          updated_at: string
-          updated_on: string | null
-          zip_code: string | null
-          zoho_id: string
+          updated_at: string | null
+          zoho_id: string | null
         }
         Insert: {
-          active_stage?: string[] | null
-          alternate_mobile?: string | null
-          associated_tags?: string[] | null
-          candidate_id?: string | null
-          candidate_owner_id?: string | null
-          candidate_owner_name?: string | null
+          ai_interview_attempts?: number | null
+          ai_interview_created?: string | null
+          ai_interview_duration?: number | null
+          ai_interview_expire_date?: string | null
+          ai_interview_finished?: string | null
+          ai_interview_last_reminder?: string | null
+          ai_interview_link?: string | null
+          ai_interview_max_attempts?: number | null
+          ai_interview_notes?: string | null
+          ai_interview_reminder_sent?: boolean | null
+          ai_interview_score?: number | null
+          ai_interview_status?: string | null
+          available_ai_interview?: boolean | null
           candidate_stage?: string | null
-          candidate_status?: string | null
-          career_page_invite_status?: string | null
           city?: string | null
           country?: string | null
-          created_at?: string
-          created_by_id?: string | null
-          created_by_name?: string | null
-          created_time?: string | null
-          current_employer?: string | null
-          current_employment_status?: string | null
-          current_job_title?: string | null
-          current_salary_zar?: number | null
+          created_at?: string | null
+          current_employment_status_2?: string | null
           desired_salary_zar?: number | null
-          email?: string | null
-          email_opt_out?: boolean | null
+          email: string
           experience_in_years?: number | null
           first_name?: string | null
-          fresh_candidate?: boolean | null
           full_name?: string | null
-          how_did_you_hear_about_us?: string | null
+          how_did_you_hear_about_scaled?: string | null
           id?: string
-          introduction_video_link?: string | null
-          is_attachment_present?: boolean | null
-          is_locked?: boolean | null
-          is_unqualified?: boolean | null
-          last_activity_time?: string | null
-          last_mailed_time?: string | null
+          last_ai_interview_date?: string | null
           last_name?: string | null
-          level_2_strengths?: string | null
-          level_3_skills?: string | null
-          linkedin_profile?: string | null
           mobile?: string | null
-          monthly_rate?: number | null
-          no_of_applications?: number | null
-          notice_period_days?: number | null
+          number_of_ai_interviews?: number | null
           origin?: string | null
-          province?: string | null
-          rating?: number | null
-          referral?: string | null
-          role_interest?: string | null
-          sa_id_number?: string | null
-          salutation?: string | null
-          scaled_level?: string | null
-          skill_set?: string | null
-          source?: string | null
-          state?: string | null
-          street?: string | null
+          resume_ai_feedback?: string | null
+          resume_level?: string | null
+          resume_prescreening_status?: string | null
+          resume_score?: string | null
+          status?: string | null
           title_position?: string | null
-          updated_at?: string
-          updated_on?: string | null
-          zip_code?: string | null
-          zoho_id: string
+          updated_at?: string | null
+          zoho_id?: string | null
         }
         Update: {
-          active_stage?: string[] | null
-          alternate_mobile?: string | null
-          associated_tags?: string[] | null
-          candidate_id?: string | null
-          candidate_owner_id?: string | null
-          candidate_owner_name?: string | null
+          ai_interview_attempts?: number | null
+          ai_interview_created?: string | null
+          ai_interview_duration?: number | null
+          ai_interview_expire_date?: string | null
+          ai_interview_finished?: string | null
+          ai_interview_last_reminder?: string | null
+          ai_interview_link?: string | null
+          ai_interview_max_attempts?: number | null
+          ai_interview_notes?: string | null
+          ai_interview_reminder_sent?: boolean | null
+          ai_interview_score?: number | null
+          ai_interview_status?: string | null
+          available_ai_interview?: boolean | null
           candidate_stage?: string | null
-          candidate_status?: string | null
-          career_page_invite_status?: string | null
           city?: string | null
           country?: string | null
-          created_at?: string
-          created_by_id?: string | null
-          created_by_name?: string | null
-          created_time?: string | null
-          current_employer?: string | null
-          current_employment_status?: string | null
-          current_job_title?: string | null
-          current_salary_zar?: number | null
+          created_at?: string | null
+          current_employment_status_2?: string | null
           desired_salary_zar?: number | null
-          email?: string | null
-          email_opt_out?: boolean | null
+          email?: string
           experience_in_years?: number | null
           first_name?: string | null
-          fresh_candidate?: boolean | null
           full_name?: string | null
-          how_did_you_hear_about_us?: string | null
+          how_did_you_hear_about_scaled?: string | null
           id?: string
-          introduction_video_link?: string | null
-          is_attachment_present?: boolean | null
-          is_locked?: boolean | null
-          is_unqualified?: boolean | null
-          last_activity_time?: string | null
-          last_mailed_time?: string | null
+          last_ai_interview_date?: string | null
           last_name?: string | null
-          level_2_strengths?: string | null
-          level_3_skills?: string | null
-          linkedin_profile?: string | null
           mobile?: string | null
-          monthly_rate?: number | null
-          no_of_applications?: number | null
-          notice_period_days?: number | null
+          number_of_ai_interviews?: number | null
           origin?: string | null
-          province?: string | null
-          rating?: number | null
-          referral?: string | null
-          role_interest?: string | null
-          sa_id_number?: string | null
-          salutation?: string | null
-          scaled_level?: string | null
-          skill_set?: string | null
-          source?: string | null
-          state?: string | null
-          street?: string | null
+          resume_ai_feedback?: string | null
+          resume_level?: string | null
+          resume_prescreening_status?: string | null
+          resume_score?: string | null
+          status?: string | null
           title_position?: string | null
-          updated_at?: string
-          updated_on?: string | null
-          zip_code?: string | null
-          zoho_id?: string
+          updated_at?: string | null
+          zoho_id?: string | null
         }
         Relationships: []
       }
@@ -249,54 +186,6 @@ export type Database = {
           total_interviews?: number | null
           updated_at?: string | null
           year?: number
-        }
-        Relationships: []
-      }
-      interview_details_result: {
-        Row: {
-          ai_detection: boolean
-          communication_score: number | null
-          created_at: string | null
-          date: string
-          documentation_score: number | null
-          id: string
-          notes: string | null
-          problem_solving_score: number | null
-          questions: Json | null
-          score: number
-          status: string
-          technical_score: number | null
-          zoho_id: string
-        }
-        Insert: {
-          ai_detection?: boolean
-          communication_score?: number | null
-          created_at?: string | null
-          date: string
-          documentation_score?: number | null
-          id?: string
-          notes?: string | null
-          problem_solving_score?: number | null
-          questions?: Json | null
-          score: number
-          status: string
-          technical_score?: number | null
-          zoho_id: string
-        }
-        Update: {
-          ai_detection?: boolean
-          communication_score?: number | null
-          created_at?: string | null
-          date?: string
-          documentation_score?: number | null
-          id?: string
-          notes?: string | null
-          problem_solving_score?: number | null
-          questions?: Json | null
-          score?: number
-          status?: string
-          technical_score?: number | null
-          zoho_id?: string
         }
         Relationships: []
       }
@@ -376,20 +265,13 @@ export type Database = {
           technical_accuracy?: number | null
           zoho_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_interview_results_zoho_id"
-            columns: ["zoho_id"]
-            isOneToOne: false
-            referencedRelation: "candidates"
-            referencedColumns: ["zoho_id"]
-          },
-        ]
+        Relationships: []
       }
       interview_settings: {
         Row: {
           ai_detection_enabled: boolean | null
           ai_detection_sensitivity: string | null
+          category_weights: Json | null
           created_at: string | null
           duration: number | null
           easy_questions_percentage: number | null
@@ -405,6 +287,7 @@ export type Database = {
         Insert: {
           ai_detection_enabled?: boolean | null
           ai_detection_sensitivity?: string | null
+          category_weights?: Json | null
           created_at?: string | null
           duration?: number | null
           easy_questions_percentage?: number | null
@@ -420,6 +303,7 @@ export type Database = {
         Update: {
           ai_detection_enabled?: boolean | null
           ai_detection_sensitivity?: string | null
+          category_weights?: Json | null
           created_at?: string | null
           duration?: number | null
           easy_questions_percentage?: number | null
@@ -439,7 +323,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never

@@ -60,40 +60,10 @@ export interface CandidateRecord {
   last_mailed_time?: string;
 }
 
-export interface FetchCandidateResponse {
-  success: boolean;
-  message: string;
-  data: CandidateRecord;
-}
-
-export const fetchAndSaveCandidate = async (zohoId: string): Promise<FetchCandidateResponse> => {
-  try {
-    console.log('Fetching candidate from Zoho with ID:', zohoId);
-
-    const { data, error } = await supabase.functions.invoke('fetch-candidate', {
-      body: { zoho_id: zohoId }
-    });
-
-    if (error) {
-      console.error('Error calling fetch-candidate function:', error);
-      throw new Error(error.message || 'Failed to fetch candidate data');
-    }
-
-    if (!data.success) {
-      throw new Error(data.error || 'Failed to fetch candidate data');
-    }
-
-    console.log('Candidate fetched and saved successfully:', data);
-    return data;
-
-  } catch (error) {
-    console.error('Error in fetchAndSaveCandidate:', error);
-    throw new Error(error instanceof Error ? error.message : 'Unknown error occurred');
-  }
-};
-
 export const getCandidateByZohoId = async (zohoId: string): Promise<CandidateRecord | null> => {
   try {
+    console.log('Fetching candidate from Supabase with zoho_id:', zohoId);
+
     const { data, error } = await supabase
       .from('candidates')
       .select('*')
@@ -103,11 +73,13 @@ export const getCandidateByZohoId = async (zohoId: string): Promise<CandidateRec
     if (error) {
       if (error.code === 'PGRST116') {
         // No rows returned
+        console.log('No candidate found with zoho_id:', zohoId);
         return null;
       }
       throw error;
     }
 
+    console.log('Candidate found:', data);
     return data;
   } catch (error) {
     console.error('Error fetching candidate by zoho_id:', error);

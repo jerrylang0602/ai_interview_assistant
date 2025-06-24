@@ -8,20 +8,24 @@ import { ErrorScreen } from './ErrorScreen';
 import { ExistingInterviewScreen } from './ExistingInterviewScreen';
 import { InterviewSidebar } from './InterviewSidebar';
 import { InterviewHeader } from './InterviewHeader';
+import { Alert, AlertDescription } from './ui/alert';
 import { evaluateAnswer, calculateOverallResults } from '../lib/interview';
 import { getZohoIdFromUrl } from '../lib/urlUtils';
 import { sendInterviewResults } from '../lib/webhookService';
 import { saveInterviewResults, getInterviewResults } from '../lib/supabaseService';
 import { useFetchCandidate } from '../hooks/useFetchCandidate';
+import { useInterviewQuestions } from '../hooks/useInterviewQuestions';
+import { useInterviewSettings } from '../hooks/useInterviewSettings';
+import { useInterviewTimer } from '../hooks/useInterviewTimer';
 import { Message } from '../types/chat';
 import { InterviewState, QuestionAnswer } from '../types/interview';
-import { useInterviewQuestions } from '../hooks/useInterviewQuestions';
 
 export const ChatBot = () => {
-  const { questions, loading: questionsLoading, error: questionsError, getQuestionCounts } = useInterviewQuestions();
+  const { questions: allQuestions, loading: questionsLoading, error: questionsError, selectQuestionsBySettings } = useInterviewQuestions();
+  const { settings, loading: settingsLoading, error: settingsError } = useInterviewSettings();
   const { fetchCandidate, loading: candidateLoading, error: candidateError, candidate } = useFetchCandidate();
-  const questionCounts = getQuestionCounts();
 
+  const [questions, setQuestions] = useState<any[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [interviewState, setInterviewState] = useState<InterviewState>({
     currentQuestionIndex: 0,
@@ -36,7 +40,25 @@ export const ChatBot = () => {
   const [candidateFetched, setCandidateFetched] = useState(false);
   const [existingInterview, setExistingInterview] = useState<any>(null);
   const [duplicateCheckCompleted, setDuplicateCheckCompleted] = useState(false);
+  const [interviewStarted, setInterviewStarted] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Timer hook for interview duration
+  const { timeRemaining, isExpired, isStarted, startTimer, formattedTime } = useInterviewTimer(
+    settings?.duration || 30,
+    () => {
+      console.log('Interview has expired');
+      setInterviewState(prev => ({ ...prev, isComplete: true }));
+      
+      const expiredMessage: Message = {
+        id: Date.now().toString(),
+        content: "⏰ **Interview Expired**\n\nThe allocated interview time has ended. Thank you for your participation. Your responses have been recorded and will be reviewed by our team.",
+        role: 'assistant',
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, expiredMessage]);
+    }
+  );
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -66,7 +88,6 @@ export const ChatBot = () => {
             console.log('Existing interview found:', existingResults[0]);
             setExistingInterview(existingResults[0]);
             
-            // Set a message showing the interview is already completed
             const alertMessage: Message = {
               id: '1',
               content: `🚨 **Your Interview Result Already Submitted**
@@ -83,7 +104,6 @@ Thank you for your understanding.`,
             };
             setMessages([alertMessage]);
             
-            // Mark interview as complete to prevent further interaction
             setInterviewState(prev => ({
               ...prev,
               isComplete: true
@@ -91,7 +111,6 @@ Thank you for your understanding.`,
           }
         } catch (error) {
           console.error('Error checking for existing interview:', error);
-          // Continue with normal flow if check fails
         }
       }
     };
@@ -106,31 +125,42 @@ Thank you for your understanding.`,
       setCandidateFetched(true);
       fetchCandidate(zohoId).catch(error => {
         console.error('Failed to fetch candidate data:', error);
-        // Continue with interview even if candidate fetch fails
       });
     }
   }, [zohoId, candidateFetched, candidateLoading, fetchCandidate, existingInterview, duplicateCheckCompleted]);
 
-  // Initialize welcome message when questions are loaded and no existing interview
+  // Select questions based on settings when both are loaded
   useEffect(() => {
-    if (!questionsLoading && questions.length > 0 && messages.length === 0 && !existingInterview && duplicateCheckCompleted) {
+    if (!questionsLoading && !settingsLoading && allQuestions.length > 0 && settings && questions.length === 0) {
+      console.log('Selecting questions based on settings:', settings);
+      const selectedQuestions = selectQuestionsBySettings(settings);
+      setQuestions(selectedQuestions);
+      console.log('Selected questions:', selectedQuestions);
+    }
+  }, [questionsLoading, settingsLoading, allQuestions, settings, questions.length, selectQuestionsBySettings]);
+
+  // Initialize welcome message when questions are selected and no existing interview
+  useEffect(() => {
+    if (questions.length > 0 && messages.length === 0 && !existingInterview && duplicateCheckCompleted && settings) {
       const candidateInfo = candidate ? ` for ${candidate.full_name || candidate.first_name || 'Candidate'}` : '';
       
       const welcomeMessage: Message = {
         id: '1',
-        content: `Welcome to Scaled Inc's Interactive AI Screening Interview${candidateInfo} for Level 1, Level 2, and Level 3 MSP Technicians!
+        content: `Welcome to Scaled Inc's Structured Assessment${candidateInfo} for Level 1, Level 2, and Level 3 MSP Technicians!
 
 This structured interview will evaluate your technical proficiency, problem-solving skills, and professional experience. Please answer each question thoughtfully and clearly.
 
-I'll ask you ${questionCounts.total} questions covering:
-• Technical Competencies (${questionCounts.technical} questions)
-• Scenario-based Problem Solving (${questionCounts.scenarioBased} questions) 
-• Behavioral & Soft Skills (${questionCounts.behavioral} questions)
+**Interview Details:**
+• Duration: ${settings.duration} minutes
+• Total Questions: ${questions.length}
+• Question Mix: ${settings.easy_questions_percentage}% Easy, ${settings.medium_questions_percentage}% Medium, ${settings.hard_questions_percentage}% Hard
 
 Each answer will be evaluated and scored:
 • Score 80-100: Level 3 (Advanced expertise)
 • Score 40-79: Level 2 (Solid foundation) 
 • Score 1-39: Level 1 (Basic understanding)
+
+⏰ **Timer starts when you answer the first question!**
 
 Ready to begin?
 
@@ -141,16 +171,16 @@ Ready to begin?
       };
       setMessages([welcomeMessage]);
     }
-  }, [questionsLoading, questions, messages.length, questionCounts, candidate, existingInterview, duplicateCheckCompleted]);
+  }, [questions, messages.length, candidate, existingInterview, duplicateCheckCompleted, settings]);
 
-  // Show loading state while fetching questions, candidate, or checking for duplicates
-  if (questionsLoading || candidateLoading || !duplicateCheckCompleted) {
+  // Show loading state while fetching data
+  if (questionsLoading || candidateLoading || settingsLoading || !duplicateCheckCompleted) {
     return <LoadingScreen candidateLoading={candidateLoading} duplicateCheckCompleted={duplicateCheckCompleted} />;
   }
 
-  // Show error state if questions failed to load
-  if (questionsError) {
-    return <ErrorScreen questionsError={questionsError} />;
+  // Show error state if questions or settings failed to load
+  if (questionsError || settingsError) {
+    return <ErrorScreen questionsError={questionsError || settingsError} />;
   }
 
   // Show alert if interview already exists
@@ -158,7 +188,19 @@ Ready to begin?
     return <ExistingInterviewScreen existingInterview={existingInterview} candidate={candidate} messages={messages} />;
   }
 
-  const handleSendMessage = async (content: string) => {
+  const handleSendMessage = async (content: string, detectionResult?: any) => {
+    // Start timer on first answer
+    if (!interviewStarted && !isStarted) {
+      startTimer();
+      setInterviewStarted(true);
+      console.log('Interview timer started');
+    }
+
+    // Log copy-paste detection result
+    if (detectionResult) {
+      console.log('Copy-paste detection for this response:', detectionResult);
+    }
+
     const userMessage: Message = {
       id: Date.now().toString(),
       content,
@@ -170,11 +212,13 @@ Ready to begin?
     setIsLoading(true);
 
     try {
-      // If interview is complete, don't process answers
-      if (interviewState.isComplete) {
+      // If interview is complete or expired, don't process answers
+      if (interviewState.isComplete || isExpired) {
         const assistantMessage: Message = {
           id: (Date.now() + 1).toString(),
-          content: "Thank you! The interview has been completed. We appreciate your time and interest in our position.",
+          content: isExpired 
+            ? "⏰ **Interview Time Expired** - No further responses can be accepted."
+            : "Thank you! The interview has been completed. We appreciate your time and interest in our position.",
           role: 'assistant',
           timestamp: new Date(),
         };
@@ -183,11 +227,17 @@ Ready to begin?
         return;
       }
 
-      // Evaluate the current answer with the actual question
+      // Evaluate the current answer with the actual question and detection result
       const currentQuestion = questions[interviewState.currentQuestionIndex];
       console.log('Evaluating answer for question:', currentQuestion);
       
-      const evaluation = await evaluateAnswer(currentQuestion.id, content, currentQuestion);
+      // Pass detection result to evaluation
+      const evaluation = await evaluateAnswer(
+        currentQuestion.id, 
+        content, 
+        currentQuestion, 
+        detectionResult
+      );
       console.log('Evaluation result:', evaluation);
       
       // Update interview state with the new answer
@@ -209,16 +259,13 @@ Thank you for completing our AI-powered pre-screening interview. Your responses 
         // Save results to both Zoho Flow webhook and Supabase if zoho_id is available
         if (zohoId) {
           try {
-            // Save to Supabase database
             await saveInterviewResults(zohoId, updatedAnswers, averageScore, overallLevel);
             console.log('Interview results successfully saved to Supabase');
             
-            // Send to Zoho Flow webhook
             await sendInterviewResults(zohoId, updatedAnswers, averageScore, overallLevel);
             console.log('Interview results successfully sent to Zoho Flow');
           } catch (error) {
             console.error('Failed to save/send results:', error);
-            // Continue with the interview completion even if saving fails
           }
         } else {
           console.warn('No zoho_id found in URL, skipping data persistence');
@@ -276,12 +323,38 @@ Thank you for completing our AI-powered pre-screening interview. Your responses 
 
       {/* Main Interview Area */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Header */}
-        <InterviewHeader 
-          isLoading={isLoading}
-          interviewState={interviewState}
-          questionsLength={questions.length}
-        />
+        {/* Header with Timer */}
+        <div className="border-b border-slate-200/50 bg-white/95 backdrop-blur-xl shadow-sm flex-shrink-0 p-4">
+          <div className="flex items-center justify-between">
+            <InterviewHeader 
+              isLoading={isLoading}
+              interviewState={interviewState}
+              questionsLength={questions.length}
+            />
+            
+            {/* Timer Display */}
+            {isStarted && (
+              <div className={`flex items-center space-x-2 px-3 py-1 rounded-lg ${
+                isExpired ? 'bg-red-100 text-red-700' : 
+                timeRemaining < 300 ? 'bg-orange-100 text-orange-700' : 
+                'bg-blue-100 text-blue-700'
+              }`}>
+                <span className="text-sm font-medium">
+                  {isExpired ? 'EXPIRED' : `Time: ${formattedTime}`}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Interview Expired Alert */}
+          {isExpired && (
+            <Alert className="mt-4 border-red-200 bg-red-50">
+              <AlertDescription className="text-red-800">
+                ⏰ The interview time has expired. No further responses will be accepted.
+              </AlertDescription>
+            </Alert>
+          )}
+        </div>
 
         {/* Messages Area - Fixed height and scrollable */}
         <div className="flex-1 flex flex-col overflow-hidden min-h-0">
@@ -295,8 +368,12 @@ Thank you for completing our AI-powered pre-screening interview. Your responses 
         <div className="border-t border-slate-200/50 bg-white/95 backdrop-blur-xl shadow-lg flex-shrink-0">
           <MessageInput 
             onSendMessage={handleSendMessage} 
-            disabled={isLoading || questions.length === 0}
-            placeholder={interviewState.isComplete ? "Interview completed - thank you for your time" : "Share your detailed response..."}
+            disabled={isLoading || questions.length === 0 || isExpired || interviewState.isComplete}
+            placeholder={
+              isExpired ? "Interview time expired" :
+              interviewState.isComplete ? "Interview completed - thank you for your time" : 
+              "Share your detailed response..."
+            }
           />
         </div>
       </div>

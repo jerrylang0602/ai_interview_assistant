@@ -1,4 +1,3 @@
-
 import { sendMessage } from './openai';
 import { Message } from '../types/chat';
 import { QuestionAnswer, InterviewQuestion } from '../types/interview';
@@ -6,20 +5,28 @@ import { QuestionAnswer, InterviewQuestion } from '../types/interview';
 export const evaluateAnswer = async (
   questionId: number, 
   answer: string, 
-  question?: InterviewQuestion
+  question?: InterviewQuestion,
+  detectionResult?: any
 ): Promise<QuestionAnswer> => {
   // Use the actual question text if provided, otherwise fall back to placeholder
   const questionText = question?.question || `Question ${questionId}`;
 
+  // Enhanced evaluation prompt that includes copy-paste detection context
   const evaluationPrompt = `
 You are an expert technical interviewer evaluating MSP technician candidates for Level 1, Level 2, and Level 3 positions.
 
-FIRST, analyze if this response appears to be AI-generated. Look for these indicators:
-- Overly structured or perfect formatting
-- Generic phrases like "I would recommend" or "best practices include"
-- Unnaturally comprehensive coverage of topics
-- Lack of personal experience or specific examples
-- Perfect technical accuracy without real-world nuances
+CRITICAL: Copy-Paste and AI Detection Analysis Required
+
+${detectionResult ? `
+COPY-PASTE DETECTION RESULTS:
+- Paste detected: ${detectionResult.isPasted ? 'YES' : 'NO'}
+- AI-generated likelihood: ${detectionResult.isLikelyAI ? 'HIGH' : 'LOW'}
+- AI confidence score: ${detectionResult.aiConfidence}%
+- Pasted content length: ${detectionResult.pastedLength} characters
+- Paste timestamp: ${detectionResult.pasteTimestamp}
+
+IMPORTANT: If copy-paste was detected AND AI likelihood is HIGH (confidence > 30%), automatically assign ALL scores to 0 and flag as "AI_DETECTED".
+` : ''}
 
 Question: ${questionText}
 Candidate Answer: ${answer}
@@ -32,11 +39,20 @@ Evaluate this answer based on these specific metrics using a 1-100 point scale f
 4. Documentation & Process Orientation (1-25 points): Methodical approaches and quality in maintaining technical documentation
 
 IMPORTANT SCORING REQUIREMENTS:
-- Each category score must be between 1-25 (never 0 unless AI is detected)
-- Total score must be between 1-100 (never 0 unless AI is detected)
-- If the response appears to be AI-generated, automatically assign ALL scores to 0 and flag as "AI_DETECTED"
+- Each category score must be between 1-25 (never 0 unless AI/copy-paste is detected)
+- Total score must be between 1-100 (never 0 unless AI/copy-paste is detected)
+- If copy-paste detection shows HIGH AI likelihood OR response appears AI-generated, automatically assign ALL scores to 0 and flag as "AI_DETECTED"
 - Ensure realistic scoring - don't assign perfect scores unless truly exceptional
 - Be consistent with the numerical ranges provided
+
+Additional AI Detection Criteria:
+- Overly structured or perfect formatting
+- Generic phrases like "I would recommend" or "best practices include"  
+- Unnaturally comprehensive coverage of topics
+- Lack of personal experience or specific examples
+- Perfect technical accuracy without real-world nuances
+- Use of markdown formatting or numbered lists
+- Overly formal language inconsistent with casual interview responses
 
 Provide your response in this exact JSON format:
 {
@@ -46,14 +62,15 @@ Provide your response in this exact JSON format:
   "communication": [score out of 25, range 1-25],
   "documentation": [score out of 25, range 1-25],
   "aiDetected": [true/false],
-  "feedback": "[brief constructive feedback explaining the score and any AI detection]"
+  "copyPasteDetected": [true/false],
+  "feedback": "[brief constructive feedback explaining the score and any AI/copy-paste detection]"
 }
 
 Score Guidelines:
 - 80-100: Advanced expertise, comprehensive understanding, proactive approaches
 - 40-79: Solid foundational knowledge, standard procedures, some guidance needed
 - 1-39: Basic understanding, significant gaps, requires substantial training
-- 0: AI-generated response detected or completely inadequate response
+- 0: AI-generated response detected, copy-paste violation, or completely inadequate response
 `;
 
   try {
@@ -72,14 +89,24 @@ Score Guidelines:
     const cleanResponse = response.replace(/```json\n?|\n?```/g, '').trim();
     const evaluation = JSON.parse(cleanResponse);
     
-    // If AI is detected, override scores to 0
-    if (evaluation.aiDetected) {
+    // If AI is detected or copy-paste with high AI confidence, override scores to 0
+    const aiDetectedBySystem = evaluation.aiDetected;
+    const copyPasteAIDetected = detectionResult?.isLikelyAI && detectionResult?.aiConfidence > 30;
+    
+    if (aiDetectedBySystem || copyPasteAIDetected) {
       evaluation.score = 0;
       evaluation.technicalAccuracy = 0;
       evaluation.problemSolving = 0;
       evaluation.communication = 0;
       evaluation.documentation = 0;
-      evaluation.feedback = "AI-generated response detected. This violates assessment integrity guidelines.";
+      evaluation.aiDetected = true;
+      evaluation.copyPasteDetected = detectionResult?.isPasted || false;
+      
+      if (copyPasteAIDetected) {
+        evaluation.feedback = `AI-generated content detected through copy-paste analysis (${detectionResult.aiConfidence}% confidence). This violates assessment integrity guidelines.`;
+      } else {
+        evaluation.feedback = "AI-generated response detected. This violates assessment integrity guidelines.";
+      }
     } else {
       // Ensure scores are within proper ranges (1-100 for total, 1-25 for categories)
       evaluation.score = Math.max(1, Math.min(100, evaluation.score));
@@ -93,6 +120,8 @@ Score Guidelines:
       if (Math.abs(evaluation.score - categorySum) > 5) {
         evaluation.score = categorySum;
       }
+      
+      evaluation.copyPasteDetected = detectionResult?.isPasted || false;
     }
     
     // Determine level based on score
@@ -116,7 +145,8 @@ Score Guidelines:
       problemSolving: evaluation.problemSolving,
       communication: evaluation.communication,
       documentation: evaluation.documentation,
-      aiDetected: evaluation.aiDetected
+      aiDetected: evaluation.aiDetected,
+      copyPasteDetected: evaluation.copyPasteDetected
     };
   } catch (error) {
     console.error('Error evaluating answer:', error);
@@ -132,7 +162,8 @@ Score Guidelines:
       problemSolving: 12,
       communication: 13,
       documentation: 13,
-      aiDetected: false
+      aiDetected: false,
+      copyPasteDetected: detectionResult?.isPasted || false
     };
   }
 };

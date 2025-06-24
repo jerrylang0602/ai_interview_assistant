@@ -1,6 +1,6 @@
 
 import { useState, useCallback, useRef } from 'react';
-import { fetchAndSaveCandidate, getCandidateByZohoId, type CandidateRecord } from '../lib/candidateService';
+import { getCandidateByZohoId, type CandidateRecord } from '../lib/candidateService';
 
 export const useFetchCandidate = () => {
   const [loading, setLoading] = useState(false);
@@ -29,7 +29,7 @@ export const useFetchCandidate = () => {
     // Create the fetch promise
     currentFetch.current = (async () => {
       try {
-        // First check if candidate already exists in our database
+        console.log('Fetching candidate from database for zoho_id:', zohoId);
         const existingCandidate = await getCandidateByZohoId(zohoId);
         
         if (existingCandidate) {
@@ -37,15 +37,11 @@ export const useFetchCandidate = () => {
           setCandidate(existingCandidate);
           fetchedZohoIds.current.add(zohoId);
           return existingCandidate;
+        } else {
+          console.log('No candidate found with zoho_id:', zohoId);
+          setError('Candidate not found');
+          return null;
         }
-
-        // If not found, fetch from Zoho and save to database
-        console.log('Candidate not found in database, fetching from Zoho...');
-        const result = await fetchAndSaveCandidate(zohoId);
-        
-        setCandidate(result.data);
-        fetchedZohoIds.current.add(zohoId);
-        return result.data;
 
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to fetch candidate';
@@ -61,33 +57,10 @@ export const useFetchCandidate = () => {
     return currentFetch.current;
   }, [candidate]);
 
-  const refetchFromZoho = useCallback(async (zohoId: string) => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      console.log('Force refetching candidate from Zoho...');
-      const result = await fetchAndSaveCandidate(zohoId);
-      
-      setCandidate(result.data);
-      fetchedZohoIds.current.add(zohoId);
-      return result.data;
-
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to refetch candidate';
-      setError(errorMessage);
-      console.error('Error refetching candidate:', err);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
   return {
     loading,
     error,
     candidate,
-    fetchCandidate,
-    refetchFromZoho
+    fetchCandidate
   };
 };
