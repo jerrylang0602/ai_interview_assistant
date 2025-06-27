@@ -189,7 +189,7 @@ Ready to begin?
       setInterviewStarted(true);
       console.log('Assessment timer started');
       
-      // Update candidate status to in_progress
+      // Update candidate status to in_progress (will call both Supabase and external API)
       if (zohoId) {
         try {
           await updateCandidateAssessmentStatus(zohoId, 'in_progress');
@@ -272,7 +272,7 @@ Thank you for completing our AI-powered pre-screening assessment. Your responses
             await sendInterviewResults(zohoId, updatedAnswers, averageScore, overallLevel);
             console.log('Assessment results successfully sent to Zoho Flow');
             
-            // Update candidate final status
+            // Update candidate final status (will call both Supabase and external API)
             await updateCandidateAssessmentStatus(zohoId, finalStatus);
             console.log(`Candidate assessment status updated to ${finalStatus}`);
           } catch (error) {

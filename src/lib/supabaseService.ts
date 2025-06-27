@@ -1,6 +1,7 @@
 import { supabaseAdmin, supabase } from './supabase';
 import { QuestionAnswer } from '../types/interview';
 import { analyzeInterviewMetrics, generateDynamicFeedback } from './feedbackGenerator';
+import { updateCandidateStatusExternal } from './externalApiService';
 
 export interface InterviewResult {
   id?: string;
@@ -162,6 +163,7 @@ export const updateCandidateAssessmentStatus = async (
   try {
     console.log(`Updating candidate assessment status to ${status} for zoho_id:`, zohoId);
     
+    // Update in Supabase
     const { error } = await supabaseAdmin
       .from('candidates')
       .update({ 
@@ -174,7 +176,11 @@ export const updateCandidateAssessmentStatus = async (
       throw error;
     }
 
-    console.log(`Successfully updated candidate assessment status to ${status}`);
+    console.log(`Successfully updated candidate assessment status to ${status} in Supabase`);
+    
+    // Also call external API
+    await updateCandidateStatusExternal(zohoId, status);
+
   } catch (error) {
     console.error('Error updating candidate assessment status:', error);
     throw new Error('Failed to update candidate assessment status');
