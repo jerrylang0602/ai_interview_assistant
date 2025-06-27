@@ -20,12 +20,12 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
           </div>
           <h2 className="text-xl font-bold text-slate-800 mb-2">
             {candidateLoading ? 'Loading Candidate Information...' : 
-             !duplicateCheckCompleted ? 'Checking Interview Status...' : 
-             'Loading Interview Questions...'}
+             !duplicateCheckCompleted ? 'Checking Assessment Status...' : 
+             'Loading Assessment Questions...'}
           </h2>
           <p className="text-slate-600">
             {candidateLoading ? 'Fetching candidate details from Zoho Recruit.' : 
-             !duplicateCheckCompleted ? 'Verifying if interview has been completed previously.' :
+             !duplicateCheckCompleted ? 'Verifying if assessment has been completed previously.' :
              'Please wait while we prepare your assessment.'}
           </p>
         </div>

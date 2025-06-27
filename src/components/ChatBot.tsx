@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageList } from './MessageList';
 import { MessageInput } from './MessageInput';
@@ -12,7 +11,7 @@ import { Alert, AlertDescription } from './ui/alert';
 import { evaluateAnswer, calculateOverallResults } from '../lib/interview';
 import { getZohoIdFromUrl } from '../lib/urlUtils';
 import { sendInterviewResults } from '../lib/webhookService';
-import { saveInterviewResults, getInterviewResults } from '../lib/supabaseService';
+import { saveInterviewResults, getInterviewResults, updateCandidateAssessmentStatus } from '../lib/supabaseService';
 import { useFetchCandidate } from '../hooks/useFetchCandidate';
 import { useInterviewQuestions } from '../hooks/useInterviewQuestions';
 import { useInterviewSettings } from '../hooks/useInterviewSettings';
@@ -155,11 +154,6 @@ This structured assessment will evaluate your technical proficiency, problem-sol
 • Total Questions: ${questions.length}
 • Question Mix: ${settings.easy_questions_percentage}% Easy, ${settings.medium_questions_percentage}% Medium, ${settings.hard_questions_percentage}% Hard
 
-Each answer will be evaluated and scored:
-• Score 80-100: Level 3 (Advanced expertise)
-• Score 40-79: Level 2 (Solid foundation) 
-• Score 1-39: Level 1 (Basic understanding)
-
 ⏰ **Timer starts when you answer the first question!**
 
 Ready to begin?
@@ -189,11 +183,21 @@ Ready to begin?
   }
 
   const handleSendMessage = async (content: string, detectionResult?: any) => {
-    // Start timer on first answer
+    // Start timer on first answer and update status to in_progress
     if (!interviewStarted && !isStarted) {
       startTimer();
       setInterviewStarted(true);
       console.log('Assessment timer started');
+      
+      // Update candidate status to in_progress
+      if (zohoId) {
+        try {
+          await updateCandidateAssessmentStatus(zohoId, 'in_progress');
+          console.log('Candidate assessment status updated to in_progress');
+        } catch (error) {
+          console.error('Failed to update candidate status to in_progress:', error);
+        }
+      }
     }
 
     // Log copy-paste detection result
@@ -256,6 +260,9 @@ Ready to begin?
 
 Thank you for completing our AI-powered pre-screening assessment. Your responses will be carefully evaluated, and we will follow up with you regarding the next steps in our hiring process. We appreciate your interest in joining our team!`;
         
+        // Determine if candidate passed or failed based on average score
+        const finalStatus = averageScore >= 60 ? 'passed' : 'failed';
+        
         // Save results to both Zoho Flow webhook and Supabase if zoho_id is available
         if (zohoId) {
           try {
@@ -264,6 +271,10 @@ Thank you for completing our AI-powered pre-screening assessment. Your responses
             
             await sendInterviewResults(zohoId, updatedAnswers, averageScore, overallLevel);
             console.log('Assessment results successfully sent to Zoho Flow');
+            
+            // Update candidate final status
+            await updateCandidateAssessmentStatus(zohoId, finalStatus);
+            console.log(`Candidate assessment status updated to ${finalStatus}`);
           } catch (error) {
             console.error('Failed to save/send results:', error);
           }

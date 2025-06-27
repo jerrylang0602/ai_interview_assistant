@@ -71,7 +71,7 @@ export const saveInterviewResults = async (
   };
 
   try {
-    console.log('Saving detailed interview results to Supabase with zoho_id:', zohoId);
+    console.log('Saving detailed assessment results to Supabase with zoho_id:', zohoId);
     console.log('Detailed results structure:', detailedResults);
     console.log('Generated dynamic feedback:', dynamicFeedback);
     
@@ -84,10 +84,10 @@ export const saveInterviewResults = async (
       throw error;
     }
 
-    console.log('Detailed interview results saved successfully to Supabase');
+    console.log('Detailed assessment results saved successfully to Supabase');
   } catch (error) {
-    console.error('Error saving detailed interview results to Supabase:', error);
-    throw new Error('Failed to save detailed interview results to database');
+    console.error('Error saving detailed assessment results to Supabase:', error);
+    throw new Error('Failed to save detailed assessment results to database');
   }
 };
 
@@ -151,5 +151,32 @@ export const getInterviewResultsWithCandidateInfo = async (zohoId?: string) => {
   } catch (error) {
     console.error('Error fetching interview results with candidate info:', error);
     throw new Error('Failed to fetch interview results with candidate information');
+  }
+};
+
+// New function to update candidate assessment status
+export const updateCandidateAssessmentStatus = async (
+  zohoId: string,
+  status: 'in_progress' | 'passed' | 'failed'
+): Promise<void> => {
+  try {
+    console.log(`Updating candidate assessment status to ${status} for zoho_id:`, zohoId);
+    
+    const { error } = await supabaseAdmin
+      .from('candidates')
+      .update({ 
+        ai_interview_status: status,
+        updated_at: new Date().toISOString()
+      })
+      .eq('zoho_id', zohoId);
+
+    if (error) {
+      throw error;
+    }
+
+    console.log(`Successfully updated candidate assessment status to ${status}`);
+  } catch (error) {
+    console.error('Error updating candidate assessment status:', error);
+    throw new Error('Failed to update candidate assessment status');
   }
 };

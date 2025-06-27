@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ClipboardList, TrendingUp, Users, Target, Trophy } from 'lucide-react';
 import { InterviewState } from '../types/interview';
