@@ -18,19 +18,25 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 }) => {
   const [message, setMessage] = useState('');
   const [textBeforePaste, setTextBeforePaste] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { detectionResult, handlePasteEvent, resetDetection } = useCopyPasteDetection();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (message.trim() && !disabled) {
-      // Pass detection result along with the message
-      onSendMessage(message.trim(), detectionResult);
-      setMessage('');
-      setTextBeforePaste('');
-      resetDetection();
-      if (textareaRef.current) {
-        textareaRef.current.style.height = 'auto';
+    if (message.trim() && !disabled && !isSubmitting) {
+      setIsSubmitting(true);
+      try {
+        // Pass detection result along with the message
+        await onSendMessage(message.trim(), detectionResult);
+        setMessage('');
+        setTextBeforePaste('');
+        resetDetection();
+        if (textareaRef.current) {
+          textareaRef.current.style.height = 'auto';
+        }
+      } finally {
+        setIsSubmitting(false);
       }
     }
   };
@@ -72,6 +78,10 @@ export const MessageInput: React.FC<MessageInputProps> = ({
     // Store current text when user focuses on textarea
     setTextBeforePaste(message);
   };
+
+  // Determine if button should be disabled or show loading
+  const isButtonDisabled = !message.trim() || disabled;
+  const showLoadingState = isSubmitting && !disabled;
 
   return (
     <form onSubmit={handleSubmit} className="p-6">
@@ -175,14 +185,14 @@ export const MessageInput: React.FC<MessageInputProps> = ({
         
         <Button
           type="submit"
-          disabled={!message.trim() || disabled}
+          disabled={isButtonDisabled}
           className={`text-white rounded-3xl px-8 py-4 h-[60px] transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-lg font-semibold min-w-[120px] ${
             detectionResult?.isLikelyAI
               ? 'bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800'
               : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700'
           }`}
         >
-          {disabled ? (
+          {showLoadingState ? (
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
               <span>Sending</span>
