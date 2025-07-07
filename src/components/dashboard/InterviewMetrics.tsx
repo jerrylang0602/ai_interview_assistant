@@ -81,14 +81,14 @@ export const InterviewMetrics = ({ analyticsData, recentResults }: InterviewMetr
       <Card className="md:col-span-2 lg:col-span-3">
         <CardHeader>
           <CardTitle>Performance Metrics Breakdown</CardTitle>
-          <CardDescription>Average scores across all evaluation criteria</CardDescription>
+          <CardDescription>Average scores across all evaluation criteria (1-100 scale)</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span>Technical Accuracy</span>
-                <span>{avgTechnicalAccuracy.toFixed(1)}%</span>
+                <span>{avgTechnicalAccuracy.toFixed(1)}/100</span>
               </div>
               <Progress value={avgTechnicalAccuracy} className="h-2" />
             </div>
@@ -96,7 +96,7 @@ export const InterviewMetrics = ({ analyticsData, recentResults }: InterviewMetr
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span>Problem Solving</span>
-                <span>{avgProblemSolving.toFixed(1)}%</span>
+                <span>{avgProblemSolving.toFixed(1)}/100</span>
               </div>
               <Progress value={avgProblemSolving} className="h-2" />
             </div>
@@ -104,7 +104,7 @@ export const InterviewMetrics = ({ analyticsData, recentResults }: InterviewMetr
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span>Communication</span>
-                <span>{avgCommunication.toFixed(1)}%</span>
+                <span>{avgCommunication.toFixed(1)}/100</span>
               </div>
               <Progress value={avgCommunication} className="h-2" />
             </div>
@@ -112,7 +112,7 @@ export const InterviewMetrics = ({ analyticsData, recentResults }: InterviewMetr
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span>Documentation</span>
-                <span>{avgDocumentation.toFixed(1)}%</span>
+                <span>{avgDocumentation.toFixed(1)}/100</span>
               </div>
               <Progress value={avgDocumentation} className="h-2" />
             </div>

@@ -1,3 +1,4 @@
+
 import { sendMessage } from './openai';
 import { Message } from '../types/chat';
 import { QuestionAnswer, InterviewQuestion } from '../types/interview';
@@ -33,17 +34,17 @@ Candidate Answer: ${answer}
 
 Evaluate this answer based on these specific metrics using a 1-100 point scale for EACH category:
 
-1. Technical Accuracy (1-25 points): Clarity, completeness, and technical correctness of the response
-2. Problem-Solving Methodology (1-25 points): Structured and logical approaches to troubleshooting and solutions
-3. Professional Communication (1-25 points): Clarity, effectiveness, and appropriateness of communication
-4. Documentation & Process Orientation (1-25 points): Methodical approaches and quality in maintaining technical documentation
+1. Technical Accuracy (1-100 points): Clarity, completeness, and technical correctness of the response
+2. Problem-Solving Methodology (1-100 points): Structured and logical approaches to troubleshooting and solutions
+3. Professional Communication (1-100 points): Clarity, effectiveness, and appropriateness of communication
+4. Documentation & Process Orientation (1-100 points): Methodical approaches and quality in maintaining technical documentation
 
 IMPORTANT SCORING REQUIREMENTS:
-- Each category score must be between 1-25 (never 0 unless AI/copy-paste is detected)
-- Total score must be between 1-100 (never 0 unless AI/copy-paste is detected)
+- Each category score must be between 1-100 (never 0 unless AI/copy-paste is detected)
+- Overall score will be calculated as the average of the four category scores
 - If copy-paste detection shows HIGH AI likelihood OR response appears AI-generated, automatically assign ALL scores to 0 and flag as "AI_DETECTED"
 - Ensure realistic scoring - don't assign perfect scores unless truly exceptional
-- Be consistent with the numerical ranges provided
+- Be consistent with the numerical ranges provided (1-100 for each category)
 
 Additional AI Detection Criteria:
 - Overly structured or perfect formatting
@@ -56,11 +57,10 @@ Additional AI Detection Criteria:
 
 Provide your response in this exact JSON format:
 {
-  "score": [total score out of 100, range 1-100],
-  "technicalAccuracy": [score out of 25, range 1-25],
-  "problemSolving": [score out of 25, range 1-25], 
-  "communication": [score out of 25, range 1-25],
-  "documentation": [score out of 25, range 1-25],
+  "technicalAccuracy": [score out of 100, range 1-100],
+  "problemSolving": [score out of 100, range 1-100], 
+  "communication": [score out of 100, range 1-100],
+  "documentation": [score out of 100, range 1-100],
   "aiDetected": [true/false],
   "copyPasteDetected": [true/false],
   "feedback": "[brief constructive feedback explaining the score and any AI/copy-paste detection]"
@@ -94,7 +94,6 @@ Score Guidelines:
     const copyPasteAIDetected = detectionResult?.isLikelyAI && detectionResult?.aiConfidence > 30;
     
     if (aiDetectedBySystem || copyPasteAIDetected) {
-      evaluation.score = 0;
       evaluation.technicalAccuracy = 0;
       evaluation.problemSolving = 0;
       evaluation.communication = 0;
@@ -108,27 +107,25 @@ Score Guidelines:
         evaluation.feedback = "AI-generated response detected. This violates assessment integrity guidelines.";
       }
     } else {
-      // Ensure scores are within proper ranges (1-100 for total, 1-25 for categories)
-      evaluation.score = Math.max(1, Math.min(100, evaluation.score));
-      evaluation.technicalAccuracy = Math.max(1, Math.min(25, evaluation.technicalAccuracy));
-      evaluation.problemSolving = Math.max(1, Math.min(25, evaluation.problemSolving));
-      evaluation.communication = Math.max(1, Math.min(25, evaluation.communication));
-      evaluation.documentation = Math.max(1, Math.min(25, evaluation.documentation));
-      
-      // Ensure total score matches sum of categories (allow some variance)
-      const categorySum = evaluation.technicalAccuracy + evaluation.problemSolving + evaluation.communication + evaluation.documentation;
-      if (Math.abs(evaluation.score - categorySum) > 5) {
-        evaluation.score = categorySum;
-      }
+      // Ensure scores are within proper ranges (1-100 for each category)
+      evaluation.technicalAccuracy = Math.max(1, Math.min(100, evaluation.technicalAccuracy));
+      evaluation.problemSolving = Math.max(1, Math.min(100, evaluation.problemSolving));
+      evaluation.communication = Math.max(1, Math.min(100, evaluation.communication));
+      evaluation.documentation = Math.max(1, Math.min(100, evaluation.documentation));
       
       evaluation.copyPasteDetected = detectionResult?.isPasted || false;
     }
     
-    // Determine level based on score
+    // Calculate overall score as the average of the four category scores
+    const overallScore = Math.round(
+      (evaluation.technicalAccuracy + evaluation.problemSolving + evaluation.communication + evaluation.documentation) / 4
+    );
+    
+    // Determine level based on overall score
     let level: 'Level 1' | 'Level 2' | 'Level 3';
-    if (evaluation.score >= 80) {
+    if (overallScore >= 80) {
       level = 'Level 3';
-    } else if (evaluation.score >= 40) {
+    } else if (overallScore >= 40) {
       level = 'Level 2';
     } else {
       level = 'Level 1';
@@ -138,7 +135,7 @@ Score Guidelines:
       questionId,
       question: questionText,
       answer,
-      score: evaluation.score,
+      score: overallScore,
       level,
       feedback: evaluation.feedback,
       technicalAccuracy: evaluation.technicalAccuracy,
@@ -158,10 +155,10 @@ Score Guidelines:
       score: 50,
       level: 'Level 2',
       feedback: 'Answer received but evaluation service encountered an error.',
-      technicalAccuracy: 12,
-      problemSolving: 12,
-      communication: 13,
-      documentation: 13,
+      technicalAccuracy: 50,
+      problemSolving: 50,
+      communication: 50,
+      documentation: 50,
       aiDetected: false,
       copyPasteDetected: detectionResult?.isPasted || false
     };

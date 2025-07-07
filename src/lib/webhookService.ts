@@ -27,7 +27,7 @@ export const sendInterviewResults = async (
   };
 
   try {
-    console.log('Sending interview results to Zoho Flow with candidate_id:', zohoId);
+    console.log('Sending interview results to new webhook endpoint with candidate_id:', zohoId);
     console.log('Generated dynamic feedback:', dynamicFeedback);
     console.log('Payload:', JSON.stringify(payload, null, 2));
     
@@ -43,9 +43,9 @@ export const sendInterviewResults = async (
       throw new Error(`Webhook request failed with status: ${response.status}`);
     }
 
-    console.log('Interview results sent successfully to Zoho Flow');
+    console.log('Interview results sent successfully to new webhook endpoint');
   } catch (error) {
-    console.error('Error sending interview results to Zoho Flow:', error);
+    console.error('Error sending interview results to webhook:', error);
     throw new Error('Failed to send interview results to webhook');
   }
 };

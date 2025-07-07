@@ -33,7 +33,7 @@ export const InterviewResults: React.FC<InterviewResultsProps> = ({
           <CheckCircle className="w-6 h-6 text-white" />
         </div>
         <div>
-          <h3 className="text-xl font-bold text-gray-800">Interview Complete</h3>
+          <h3 className="text-xl font-bold text-gray-800">Assessment Complete</h3>
           <p className="text-sm text-gray-500">Technical Screening Results</p>
         </div>
       </div>
@@ -107,14 +107,14 @@ export const InterviewResults: React.FC<InterviewResultsProps> = ({
         </div>
       </div>
 
-      {/* Detailed Metrics */}
+      {/* Detailed Metrics - Updated to show /100 scale */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-gradient-to-r from-cyan-50 to-blue-50 rounded-xl p-4 border border-cyan-100">
           <div className="flex items-center gap-2 mb-2">
             <Brain className="w-5 h-5 text-cyan-600" />
             <h4 className="font-semibold text-gray-800 text-sm">Technical Accuracy</h4>
           </div>
-          <p className="text-xl font-bold text-cyan-600">{analysis.technicalAccuracy}/25</p>
+          <p className="text-xl font-bold text-cyan-600">{analysis.technicalAccuracy}/100</p>
         </div>
 
         <div className="bg-gradient-to-r from-emerald-50 to-green-50 rounded-xl p-4 border border-emerald-100">
@@ -122,7 +122,7 @@ export const InterviewResults: React.FC<InterviewResultsProps> = ({
             <AlertTriangle className="w-5 h-5 text-emerald-600" />
             <h4 className="font-semibold text-gray-800 text-sm">Problem Solving</h4>
           </div>
-          <p className="text-xl font-bold text-emerald-600">{analysis.problemSolving}/25</p>
+          <p className="text-xl font-bold text-emerald-600">{analysis.problemSolving}/100</p>
         </div>
 
         <div className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl p-4 border border-orange-100">
@@ -130,7 +130,7 @@ export const InterviewResults: React.FC<InterviewResultsProps> = ({
             <MessageSquare className="w-5 h-5 text-orange-600" />
             <h4 className="font-semibold text-gray-800 text-sm">Communication</h4>
           </div>
-          <p className="text-xl font-bold text-orange-600">{analysis.communication}/25</p>
+          <p className="text-xl font-bold text-orange-600">{analysis.communication}/100</p>
         </div>
 
         <div className="bg-gradient-to-r from-violet-50 to-purple-50 rounded-xl p-4 border border-violet-100">
@@ -138,7 +138,7 @@ export const InterviewResults: React.FC<InterviewResultsProps> = ({
             <ClipboardCheck className="w-5 h-5 text-violet-600" />
             <h4 className="font-semibold text-gray-800 text-sm">Documentation</h4>
           </div>
-          <p className="text-xl font-bold text-violet-600">{analysis.documentation}/25</p>
+          <p className="text-xl font-bold text-violet-600">{analysis.documentation}/100</p>
         </div>
       </div>
 
@@ -169,7 +169,7 @@ export const InterviewResults: React.FC<InterviewResultsProps> = ({
         </div>
       )}
 
-      {/* Question Breakdown */}
+      {/* Question Breakdown - Updated to show /100 scale */}
       <div className="space-y-3 mb-6">
         <h4 className="font-semibold text-gray-800 mb-3">Question Breakdown:</h4>
         {answers.map((answer, index) => (
@@ -200,16 +200,16 @@ export const InterviewResults: React.FC<InterviewResultsProps> = ({
             {!answer.aiDetected && (
               <div className="grid grid-cols-4 gap-2 mb-2 text-xs">
                 <div className="text-center">
-                  <span className="text-cyan-600 font-medium">Tech: {answer.technicalAccuracy}</span>
+                  <span className="text-cyan-600 font-medium">Tech: {answer.technicalAccuracy}/100</span>
                 </div>
                 <div className="text-center">
-                  <span className="text-emerald-600 font-medium">Prob: {answer.problemSolving}</span>
+                  <span className="text-emerald-600 font-medium">Prob: {answer.problemSolving}/100</span>
                 </div>
                 <div className="text-center">
-                  <span className="text-orange-600 font-medium">Comm: {answer.communication}</span>
+                  <span className="text-orange-600 font-medium">Comm: {answer.communication}/100</span>
                 </div>
                 <div className="text-center">
-                  <span className="text-violet-600 font-medium">Doc: {answer.documentation}</span>
+                  <span className="text-violet-600 font-medium">Doc: {answer.documentation}/100</span>
                 </div>
               </div>
             )}
