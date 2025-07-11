@@ -13,6 +13,8 @@ export interface InterviewSettings {
   ai_detection_sensitivity: string;
   pattern_similarity_threshold: number;
   selected_categories: string[];
+  assessment_passing_score?: number;
+  assessment_passing_level?: string;
   created_at: string;
   updated_at: string;
 }
@@ -42,6 +44,8 @@ export const getInterviewSettings = async (): Promise<InterviewSettings | null> 
           ai_detection_sensitivity: 'medium',
           pattern_similarity_threshold: 70,
           selected_categories: ['JavaScript', 'React', 'Behavioral'],
+          assessment_passing_score: 70,
+          assessment_passing_level: 'Level 3',
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         };

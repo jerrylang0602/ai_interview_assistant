@@ -25,7 +25,8 @@ export const saveInterviewResults = async (
   zohoId: string,
   answers: QuestionAnswer[],
   averageScore: number,
-  overallLevel: 'Level 1' | 'Level 2' | 'Level 3'
+  overallLevel: 'Level 1' | 'Level 2' | 'Level 3',
+  status: 'passed' | 'failed' = 'passed'
 ): Promise<void> => {
   // Analyze interview metrics and generate dynamic feedback
   const analysis = analyzeInterviewMetrics(answers, averageScore, overallLevel);
@@ -67,7 +68,7 @@ export const saveInterviewResults = async (
     ai_detected: hasAiDetection,
     completed_at: new Date().toISOString(),
     detailed_result: detailedResults, // Store as detailed_result to match the database column
-    status: 'completed'
+    status: status
   };
 
   try {
