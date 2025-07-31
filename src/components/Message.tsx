@@ -2,6 +2,7 @@
 import React from 'react';
 import { Message } from '../types/chat';
 import { Bot, User, CheckCircle } from 'lucide-react';
+import { MarkdownMessage } from './MarkdownMessage';
 
 interface MessageProps {
   message: Message;
@@ -31,11 +32,13 @@ export const MessageComponent: React.FC<MessageProps> = ({ message }) => {
               : 'bg-white border-slate-200 text-slate-800 rounded-bl-lg shadow-slate-100 hover:shadow-md hover:border-slate-300'
           }`}
         >
-          <p className={`text-sm leading-relaxed whitespace-pre-wrap ${
-            isUser ? 'text-blue-50' : 'text-slate-700'
-          }`}>
-            {message.content}
-          </p>
+          {isUser ? (
+            <p className="text-sm leading-relaxed whitespace-pre-wrap text-blue-50">
+              {message.content}
+            </p>
+          ) : (
+            <MarkdownMessage content={message.content} />
+          )}
         </div>
         
         <div className={`flex items-center gap-2 mt-2 ${isUser ? 'justify-end' : 'justify-start'}`}>

@@ -1,6 +1,7 @@
 import { supabaseAdmin, supabase } from './supabase';
 import { QuestionAnswer } from '../types/interview';
 import { analyzeInterviewMetrics, generateDynamicFeedback } from './feedbackGenerator';
+import { getInterviewSettings } from './interviewSettingsService';
 
 export interface InterviewResult {
   id?: string;
@@ -25,9 +26,14 @@ export const saveInterviewResults = async (
   zohoId: string,
   answers: QuestionAnswer[],
   averageScore: number,
-  overallLevel: 'Level 1' | 'Level 2' | 'Level 3',
-  status: 'passed' | 'failed' = 'passed'
+  overallLevel: 'Level 1' | 'Level 2' | 'Level 3'
 ): Promise<void> => {
+  // Fetch interview settings to get passing criteria
+  const settings = await getInterviewSettings();
+  if (!settings) {
+    throw new Error('Unable to fetch interview settings');
+  }
+
   // Analyze interview metrics and generate dynamic feedback
   const analysis = analyzeInterviewMetrics(answers, averageScore, overallLevel);
   const dynamicFeedback = generateDynamicFeedback(analysis);
@@ -40,6 +46,30 @@ export const saveInterviewResults = async (
 
   // Check if any AI was detected
   const hasAiDetection = answers.some(answer => answer.aiDetected);
+
+  // Determine assessment status based on passing criteria
+  // If AI is detected, automatically fail
+  let assessmentStatus = 'failed';
+  
+  if (!hasAiDetection) {
+    // Convert level to numeric for comparison
+    const levelToNumber = (level: string): number => {
+      switch (level) {
+        case 'Level 1': return 1;
+        case 'Level 2': return 2;
+        case 'Level 3': return 3;
+        default: return 0;
+      }
+    };
+
+    const candidateLevel = levelToNumber(overallLevel);
+    const requiredLevel = levelToNumber(settings.assessment_passing_level);
+
+    // Check if candidate meets both score and level requirements
+    if (averageScore >= settings.assessment_passing_score && candidateLevel >= requiredLevel) {
+      assessmentStatus = 'passed';
+    }
+  }
 
   // Create detailed_results array with the exact structure you specified
   const detailedResults = answers.map(answer => ({
@@ -68,11 +98,19 @@ export const saveInterviewResults = async (
     ai_detected: hasAiDetection,
     completed_at: new Date().toISOString(),
     detailed_result: detailedResults, // Store as detailed_result to match the database column
-    status: status
+    status: assessmentStatus
   };
 
   try {
     console.log('Saving detailed assessment results to Supabase with zoho_id:', zohoId);
+    console.log('Assessment status determination:', {
+      averageScore,
+      overallLevel,
+      requiredScore: settings.assessment_passing_score,
+      requiredLevel: settings.assessment_passing_level,
+      hasAiDetection,
+      finalStatus: assessmentStatus
+    });
     console.log('Detailed results structure:', detailedResults);
     console.log('Generated dynamic feedback:', dynamicFeedback);
     

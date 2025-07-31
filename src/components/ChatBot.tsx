@@ -260,14 +260,27 @@ Ready to begin?
 
 Thank you for completing our AI-powered pre-screening assessment. Your responses will be carefully evaluated, and we will follow up with you regarding the next steps in our hiring process. We appreciate your interest in joining our team!`;
         
+        // Check if AI was detected in any answer
+        const hasAiDetection = updatedAnswers.some(answer => answer.aiDetected);
+        
         // Determine if candidate passed or failed based on interview settings
-        const passingScore = settings?.assessment_passing_score || 70; // Default to 70 if not set
-        const finalStatus = averageScore >= passingScore ? 'passed' : 'failed';
+        const passingScore = settings?.assessment_passing_score || 60;
+        let finalStatus: 'passed' | 'failed';
+        
+        if (hasAiDetection) {
+          // If AI is detected, mark as failed regardless of score
+          finalStatus = 'failed';
+          console.log('Candidate marked as failed due to AI detection');
+        } else {
+          // Use assessment passing score from settings
+          finalStatus = averageScore >= passingScore ? 'passed' : 'failed';
+          console.log(`Candidate ${finalStatus} based on score ${averageScore} vs passing score ${passingScore}`);
+        }
         
         // Save results to both Zoho Flow webhook and Supabase if zoho_id is available
         if (zohoId) {
           try {
-            await saveInterviewResults(zohoId, updatedAnswers, averageScore, overallLevel, finalStatus);
+            await saveInterviewResults(zohoId, updatedAnswers, averageScore, overallLevel);
             console.log('Assessment results successfully saved to Supabase');
             
             await sendInterviewResults(zohoId, updatedAnswers, averageScore, overallLevel);

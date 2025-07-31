@@ -106,10 +106,10 @@ export const InterviewSidebar: React.FC<InterviewSidebarProps> = ({
                     <span className="text-slate-800">{candidate.mobile}</span>
                   </div>
                 )}
-                {candidate.current_job_title && (
+                {(candidate.title_position || candidate.current_employer) && (
                   <div className="flex">
                     <span className="font-medium text-slate-600 w-16 flex-shrink-0">Role:</span>
-                    <span className="text-slate-800 truncate">{candidate.current_job_title}</span>
+                    <span className="text-slate-800 truncate">{candidate.title_position || candidate.current_employer}</span>
                   </div>
                 )}
                 {candidate.city && candidate.state && (
