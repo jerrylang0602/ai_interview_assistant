@@ -183,21 +183,11 @@ Ready to begin?
   }
 
   const handleSendMessage = async (content: string, detectionResult?: any) => {
-    // Start timer on first answer and update status to in_progress
+    // Start timer on first answer
     if (!interviewStarted && !isStarted) {
       startTimer();
       setInterviewStarted(true);
       console.log('Assessment timer started');
-      
-      // Update candidate status to in_progress
-      if (zohoId) {
-        try {
-          await updateCandidateAssessmentStatus(zohoId, 'in_progress');
-          console.log('Candidate assessment status updated to in_progress');
-        } catch (error) {
-          console.error('Failed to update candidate status to in_progress:', error);
-        }
-      }
     }
 
     // Log copy-paste detection result

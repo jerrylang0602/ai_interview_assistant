@@ -2,8 +2,15 @@
 import OpenAI from 'openai';
 import { Message } from '../types/chat';
 
+const apiKey = import.meta.env.VITE_OPENAI_API_KEY as string | undefined;
+
+if (!apiKey) {
+  // Log a helpful error to aid local development without exposing secrets
+  console.error('Missing VITE_OPENAI_API_KEY. Set it in your .env file.');
+}
+
 const openai = new OpenAI({
-  apiKey: import.meta.env.VITE_OPENAI_API_KEY,
+  apiKey: apiKey ?? '',
   dangerouslyAllowBrowser: true
 });
 

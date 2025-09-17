@@ -154,6 +154,33 @@ export const InterviewSidebar: React.FC<InterviewSidebarProps> = ({
             </div>
           </div>
 
+          {/* Important Notes */}
+          <div className="bg-gradient-to-br from-red-50 to-rose-50 rounded-xl p-4 border border-red-100/50 shadow-sm mb-4">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-7 h-7 bg-red-500 rounded-lg flex items-center justify-center">
+                <Target className="w-3.5 h-3.5 text-white" />
+              </div>
+              <h3 className="font-bold text-slate-800 text-sm">Important Notes</h3>
+            </div>
+            
+            <div className="space-y-2 text-xs text-slate-600">
+              <div className="flex items-start gap-2">
+                <div className="w-1.5 h-1.5 bg-red-500 rounded-full mt-1.5 flex-shrink-0"></div>
+                <span>Provide detailed answers</span>
+              </div>
+              
+              <div className="flex items-start gap-2">
+                <div className="w-1.5 h-1.5 bg-red-500 rounded-full mt-1.5 flex-shrink-0"></div>
+                <span>Copy/paste answers will be <strong>disqualified</strong></span>
+              </div>
+              
+              <div className="flex items-start gap-2">
+                <div className="w-1.5 h-1.5 bg-red-500 rounded-full mt-1.5 flex-shrink-0"></div>
+                <span>AI-generated answers will be <strong>disqualified</strong></span>
+              </div>
+            </div>
+          </div>
+
           {/* Achievement Badge */}
           {interviewState.isComplete && (
             <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl p-4 border border-amber-200/50 shadow-sm">
