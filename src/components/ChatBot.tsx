@@ -42,9 +42,9 @@ export const ChatBot = () => {
   const [interviewStarted, setInterviewStarted] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Timer hook for assessment duration
+  // Timer hook for assessment duration - uses duration from settings
   const { timeRemaining, isExpired, isStarted, startTimer, formattedTime } = useInterviewTimer(
-    settings?.duration || 30,
+    settings?.duration || 45,
     () => {
       console.log('Assessment has expired');
       setInterviewState(prev => ({ ...prev, isComplete: true }));

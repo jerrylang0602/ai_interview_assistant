@@ -6,6 +6,13 @@ export const useInterviewTimer = (durationMinutes: number, onExpire: () => void)
   const [isExpired, setIsExpired] = useState(false);
   const [isStarted, setIsStarted] = useState(false);
 
+  // Update time remaining when duration changes
+  useEffect(() => {
+    if (!isStarted) {
+      setTimeRemaining(durationMinutes * 60);
+    }
+  }, [durationMinutes, isStarted]);
+
   const startTimer = useCallback(() => {
     console.log(`Starting assessment timer for ${durationMinutes} minutes`);
     setIsStarted(true);
